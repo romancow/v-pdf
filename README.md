@@ -1,2 +1,2 @@
 # v-pdf
-Vue component for showing PDFs using PDF.js
+Vue 2 component for showing PDFs using PDF.js
