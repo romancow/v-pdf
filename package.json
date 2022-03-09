@@ -9,6 +9,10 @@
 		"types/"
 	],
 	"scripts": {
+		"clean": "rimraf ./build/* ./types/*",
+		"prebuild": "npm run clean",
+		"build": "tsc -p . --diagnostics --explainFiles",
+		"prepare": "tsc -p ."
 	},
 	"repository": "git://github.com/romancow/v-pdf.git",
 	"publishConfig": {
@@ -26,6 +30,15 @@
 		"url": "https://github.com/romancow/v-pdf/issues"
 	},
 	"homepage": "https://github.com/romancow/v-pdf#readme",
-	"dependencies": {},
-	"devDependencies": {}
+	"dependencies": {
+		"pdfjs-dist": "^2.13.216"
+	},
+	"devDependencies": {
+		"rimraf": "^3.0.2",
+		"typescript": "^4.6.2",
+		"vue": "^3.2.31"
+	},
+	"peerDependencies": {
+		"vue": "2"
+	}
 }
