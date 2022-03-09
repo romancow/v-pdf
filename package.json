@@ -1,0 +1,31 @@
+{
+	"name": "@romancow/v-pdf",
+	"version": "1.0.0",
+	"description": "Vue component for showing PDFs using PDF.js",
+	"main": "build/v-pdf.js",
+	"types": "types/v-pdf.d.ts",
+	"files": [
+		"build/",
+		"types/"
+	],
+	"scripts": {
+	},
+	"repository": "git://github.com/romancow/v-pdf.git",
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/"
+	},
+	"keywords": [
+		"vue",
+		"component",
+		"pdf",
+		"pdfjs"
+	],
+	"author": "Sean Wilson",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/romancow/v-pdf/issues"
+	},
+	"homepage": "https://github.com/romancow/v-pdf#readme",
+	"dependencies": {},
+	"devDependencies": {}
+}
