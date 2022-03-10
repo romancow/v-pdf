@@ -9,16 +9,19 @@ type VPdf = Vue & {
 	readonly src: string | null
 	readonly page: number
 	readonly scale: number
+	readonly transition: string | null
 
 	readonly pageCount: number
 	readonly pageSize: { width: number, height: number }
 	readonly pageViewport: PageViewport | null
 	readonly pageRenderParams: RenderParameters | null
+	readonly currentPage: number
 
 	document: PDFDocumentProxy | null
 	documentPage: PDFPageProxy | null
 
 	renderPage(): Promise<void>
+	loadEmitter(type: string): <T>(value: T) => T
 }
 
 export default (Vue as VueConstructor<VPdf>).extend({
@@ -26,7 +29,8 @@ export default (Vue as VueConstructor<VPdf>).extend({
 	props: {
 		src: { type: String, default: null },
 		page: { type: Number, default: 1 },
-		scale: { type: Number, default: 1 }
+		scale: { type: Number, default: 1 },
+		transition: { type: String, default: null }
 	},
 
 	data() {
@@ -42,7 +46,7 @@ export default (Vue as VueConstructor<VPdf>).extend({
 		},
 
 		pageSize(this: VPdf) {
-			const { width, height } = this.pageViewport ?? {}
+			const { width = 0, height = 0 } = this.pageViewport ?? {}
 			return { width, height }
 		},
 
@@ -52,33 +56,47 @@ export default (Vue as VueConstructor<VPdf>).extend({
 		},
 
 		pageRenderParams(this: VPdf) {
-			const { $el, pageViewport: viewport } = this
+			const { $el, page, pageViewport: viewport } = this
 			if (viewport == null) return null
-			const canvas = $el.getElementsByTagName('canvas')[0]
-			const canvasContext = canvas.getContext('2d') as Object
+			const canvas = $el.querySelector(`canvas[data-page="${page}"]`) as HTMLCanvasElement | null
+			const canvasContext = canvas?.getContext('2d') as Object | undefined
 			return { canvasContext, viewport }
+		},
+
+		currentPage(this: VPdf) {
+			return this.documentPage?.pageNumber ?? 0
 		}
 	},
 
 	methods: {
 		async setDocumentPage(this: VPdf) {
 			const { document, page } = this
+			const emitter = this.loadEmitter('page')
 			this.documentPage = !document ? null :
-				await document.getPage(page)
+				await document.getPage(page).then(emitter)
 		},
 
 		async renderPage(this: VPdf) {
 			const { documentPage, pageRenderParams: params } = this
 			params && documentPage?.render(params)
+		},
+	
+		loadEmitter(this: VPdf, type: string) {
+			return <T>(loaded: T) => {
+				const { src } = this
+				this.$emit(`${type}-load`, { src, [type]: loaded })
+				return loaded
+			}
 		}
 	},
 
 	watch: {
 		src: {
-			async handler(this: VPdf, newSrc: string | null) {
+			async handler(this: VPdf, src: string | null) {
 				this.document?.destroy()
-				this.document = !newSrc ? null :
-					await PdfJs.getDocument(newSrc).promise
+				const emitter = this.loadEmitter('document')
+				this.document = !src ? null :
+					await PdfJs.getDocument(src).promise.then(emitter)
 			},
 			immediate: true
 		},
@@ -88,9 +106,12 @@ export default (Vue as VueConstructor<VPdf>).extend({
 	},
 
 	render(this: VPdf, h: CreateElement) {
-		const domProps = this.pageSize
-		const canvas = h('canvas', { domProps })
-		return h('div', { class: 'v-pdf'}, [canvas])
+		const { src, currentPage, pageSize: domProps, transition } = this
+		const attrs = { "data-page": currentPage }
+		const key = `${src}#${currentPage}`
+		const canvas = h('canvas', { attrs, domProps, key })
+		const transtionNode = h('transition', { props: { name: transition }}, [canvas])
+		return h('div', { class: 'v-pdf'}, [transtionNode])
 	},
 
 	updated(this: VPdf) {
