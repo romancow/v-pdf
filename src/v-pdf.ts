@@ -21,7 +21,7 @@ type VPdf = Vue & {
 	documentPage: PDFPageProxy | null
 
 	renderPage(): Promise<void>
-	loadEmitter(type: string): <T>(value: T) => T
+	loadEmit<T>(type: string, loading: Promise<T>): Promise<T | null>
 }
 
 export default (Vue as VueConstructor<VPdf>).extend({
@@ -71,22 +71,26 @@ export default (Vue as VueConstructor<VPdf>).extend({
 	methods: {
 		async setDocumentPage(this: VPdf) {
 			const { document, page } = this
-			const emitter = this.loadEmitter('page')
 			this.documentPage = !document ? null :
-				await document.getPage(page).then(emitter)
+				await this.loadEmit('page', document.getPage(page))
 		},
 
 		async renderPage(this: VPdf) {
 			const { documentPage, pageRenderParams: params } = this
 			params && documentPage?.render(params)
 		},
-	
-		loadEmitter(this: VPdf, type: string) {
-			return <T>(loaded: T) => {
-				const { src } = this
+
+		async loadEmit<T>(this: VPdf, type: string, promise: Promise<T>) {
+			const { src } = this
+			let loaded: T | null = null
+			try {
+				loaded = await promise
 				this.$emit(`${type}-load`, { src, [type]: loaded })
-				return loaded
 			}
+			catch (error) {
+				this.$emit('error', error)
+			}
+			return loaded
 		}
 	},
 
@@ -94,9 +98,8 @@ export default (Vue as VueConstructor<VPdf>).extend({
 		src: {
 			async handler(this: VPdf, src: string | null) {
 				this.document?.destroy()
-				const emitter = this.loadEmitter('document')
 				this.document = !src ? null :
-					await PdfJs.getDocument(src).promise.then(emitter)
+					await this.loadEmit('document', PdfJs.getDocument(src).promise)
 			},
 			immediate: true
 		},
