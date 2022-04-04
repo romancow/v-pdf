@@ -1,19 +1,23 @@
-import type { VueConstructor, CreateElement } from 'vue'
+import type { VueConstructor, CreateElement, VNode } from 'vue'
 import Vue from 'vue'
 import type { PDFPageProxy, PageViewport } from 'pdfjs-dist'
 
 type RenderParameters = Parameters<PDFPageProxy['render']>[0]
 
 type VPdfPage = Vue & {
-	readonly value: PDFPageProxy | null,
+	readonly value: Promise<PDFPageProxy | null> | PDFPageProxy | null,
 	readonly scale: number,
+
+	page: PDFPageProxy | null
 
 	readonly pageNumber: number,
 	readonly viewport: PageViewport | null
 	readonly size: { width: number, height: number }
 	readonly renderParams: RenderParameters | null
+	readonly isLoading: boolean
 
 	renderPage(): Promise<void>
+	renderLoading(h: CreateElement): VNode
 }
 
 export default (Vue as VueConstructor<VPdfPage>).extend({
@@ -23,15 +27,21 @@ export default (Vue as VueConstructor<VPdfPage>).extend({
 		scale: { type: Number, default: 1 }
 	},
 
+	data() {
+		return {
+			page: null
+		}
+	},
+
 	computed: {
 
 		pageNumber() {
-			return this.value?.pageNumber ?? 0
+			return this.page?.pageNumber ?? 0
 		},
 
 		viewport(this: VPdfPage) {
-			const { scale, value } = this
-			return value?.getViewport({ scale })
+			const { scale, page } = this
+			return page?.getViewport({ scale })
 		},
 
 		size(this: VPdfPage) {
@@ -40,26 +50,37 @@ export default (Vue as VueConstructor<VPdfPage>).extend({
 		},
 
 		renderParams(this: VPdfPage) {
-			const { $el, viewport } = this
-			if (viewport == null) return null
-			const canvas = $el as HTMLCanvasElement | null
-			const canvasContext = canvas?.getContext('2d') as Object | undefined
+			const { $refs, viewport } = this
+			const canvas = $refs.canvas as HTMLCanvasElement | undefined
+			if ((viewport == null) || (canvas == null)) return null
+			const canvasContext = canvas?.getContext('2d')
 			return { canvasContext, viewport }
+		},
+
+		isLoading(this: VPdfPage) {
+			const { value, page } = this
+			return (value != null) && (page ==null)
 		}
 
 	},
 
 	methods: {
 		async renderPage(this: VPdfPage) {
-			const { value, renderParams } = this
-			renderParams && value?.render(renderParams)
+			const { page, renderParams } = this
+			renderParams && page?.render(renderParams)
+		},
+
+		renderLoading(this: VPdfPage, h: CreateElement) {
+			const { $slots: { loading }} = this
+			return h('div', loading)
 		}
 	},
 
 	render(this: VPdfPage, h: CreateElement) {
-		const { pageNumber, scale , size: domProps } = this
+		const { pageNumber, scale , size: domProps, isLoading } = this
 		const attrs = { "data-page": pageNumber, "data-scale": scale }
-		return h('canvas', { class: "v-pdf-page", attrs, domProps })
+		return isLoading ? this.renderLoading(h) :
+			h('canvas', { ref: "canvas", class: "v-pdf-page", attrs, domProps })
 	},
 
 	async mounted(this: VPdfPage) {
@@ -69,6 +90,15 @@ export default (Vue as VueConstructor<VPdfPage>).extend({
 
 	updated(this: VPdfPage) {
 		return this.renderPage()
+	},
+
+	watch: {
+		value: {
+			async handler(this: VPdfPage, value: VPdfPage['value']) {
+				this.page = await value
+			},
+			immediate: true
+		}
 	}
 
 })
