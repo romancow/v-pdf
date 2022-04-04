@@ -1,0 +1,35 @@
+<html>
+	<head>
+		<title>Vue PDF.js Test</title>
+		<script>
+			process = { env: {} }
+		</script>
+		<script src="../node_modules/pdfjs-dist/legacy/build/pdf.js"></script>
+		<script src="../node_modules/vue/dist/vue.js"></script>
+
+		<style>
+			main {
+				height: 100%;
+			}
+
+			.fade-enter-active, .fade-leave-active {
+				transition: opacity .5s;
+			}
+
+			.fade-enter, .fade-leave-to {
+				opacity: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<main id="app">
+			<h1 v-text="title"></h1>
+			<button :disabled="isFirstPage" @click="prevPage">&#8678;</button>
+			<span>Page {{ currentPage }}</span>
+			<button :disabled="isLastPage" @click="nextPage">&#8680;</button>
+			<v-pdf :src="pdf" :page="currentPage" transition="fade" @document-load="documentLoad" @error="logError"></v-pdf>
+		</main>
+
+		<script type="module" src="app.js"></script>
+	</body>
+</html>
