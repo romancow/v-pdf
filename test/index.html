@@ -28,7 +28,7 @@
 			<button :disabled="isFirstPage" @click="prevPage">&#8678;</button>
 			<span>Page {{ currentPage }}</span>
 			<button :disabled="isLastPage" @click="nextPage">&#8680;</button>
-			<v-pdf :src="pdf" :page="currentPage" transition="fade" @document-load="documentLoad" @error="logError"></v-pdf>
+			<v-pdf-page :src="pdf" :page="currentPage" transition="fade" @document-load="documentLoad" @error="logError"></v-pdf>
 		</main>
 
 		<script src="app.js"></script>

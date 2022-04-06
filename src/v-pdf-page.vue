@@ -1,53 +1,67 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import type { PDFPageProxy } from 'pdfjs-dist'
+import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
+import PdfJs from 'pdfjs-dist'
+import VPdfRender from './v-pdf-render.vue'
 
-@Component
-export default class VPdfPage extends Vue {
+@Component({
+	components: { VPdfRender }
+})
+export default class VPdf extends Vue {
 
-	@Prop({ type: Object, default: null })
-	readonly value!: Promise<PDFPageProxy | null> | PDFPageProxy | null
+	@Prop({ type: String, default: null })
+	readonly src!: string | null
+
+	@Prop({ type: Number, default: 1 })
+	readonly page!: number
 
 	@Prop({ type: Number, default: 1 })
 	readonly scale!: number
 
-	page: PDFPageProxy | null = null
+	@Prop({ type: String, default: null })
+	readonly transition!: string | null
 
-	get pageNumber() {
-		return this.page?.pageNumber ?? 0
+	document: PDFDocumentProxy | null = null
+	documentPage: PDFPageProxy | null = null
+
+	get pageCount() {
+		return this.document?.numPages ?? 0
 	}
 
-	get viewport() {
-		const { scale, page } = this
-		return page?.getViewport({ scale })
+	get currentPage() {
+		return this.documentPage?.pageNumber ?? 0
 	}
 
-	get size() {
-		const { width = 0, height = 0 } = this.viewport ?? {}
-		return { width, height }
+	@Watch('src', { immediate: true })
+	async setDocument(src: string | null) {
+		this.document?.destroy()
+		this.document = !src ? null :
+			await this.loadEmit('document', PdfJs.getDocument(src).promise)
 	}
 
-	get renderParams() {
-		const { $refs, viewport } = this
-		const canvas = $refs.canvas as HTMLCanvasElement | undefined
-		const canvasContext = canvas?.getContext('2d')
-		return  ((viewport == null) || (canvas == null) || (canvasContext == null)) ?
-			null : { canvasContext, viewport }
+	@Watch('document')
+	@Watch('page')
+	async setDocumentPage() {
+		const { document, page } = this
+		this.documentPage = !document ? null :
+			await this.loadEmit('page', document.getPage(page))
 	}
 
-	get isLoading() {
-		const { value, page } = this
-		return (value != null) && (page ==null)
+	async loadEmit<T>(type: string, promise: Promise<T>) {
+		const { src } = this
+		let loaded: T | null = null
+		try {
+			loaded = await promise
+			this.$emit(`${type}-load`, { src, [type]: loaded })
+		}
+		catch (error) {
+			this.$emit('error', error)
+		}
+		return loaded
 	}
 
-	updated() {
-		const { page, renderParams } = this
-		renderParams && page?.render(renderParams)
-	}
-
-	@Watch("value", { immediate: true })
-	async handleValuePromise(value: VPdfPage['value']) {
-		this.page = await value
+	beforeDestroy() {
+		this.document?.destroy()
 	}
 }
 </script>
@@ -55,20 +69,13 @@ export default class VPdfPage extends Vue {
 
 <template lang="pug">
 
-	div.v-pdf-page.loading(v-if='isLoading')
-		slot(name='loading')
-	canvas.v-pdf-page(
-		v-else,
-		ref='canvas',
-		:data-page='pageNumber',
-		:data-scale='scale',
-		:width='size.width',
-		:height='size.height'
-	)
+	div.v-pdf-page
+		transition(:name='transition')
+			v-pdf-render(:key='src + "#" + currentPage', :value='documentPage', :scale='scale')
 
 </template>
 
 
-<style lang="sass" scoped>
+<style lang="css" scoped>
 
 </style>

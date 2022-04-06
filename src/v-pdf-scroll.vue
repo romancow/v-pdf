@@ -1,10 +1,10 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
 import type { PDFDocumentProxy/*, PDFPageProxy*/ } from 'pdfjs-dist'
-import VPdfPage from './v-pdf-page.vue'
+import VPdfRender from './v-pdf-render.vue'
 
 @Component({
-	components: { VPdfPage }
+	components: { VPdfRender }
 })
 export default class VPdfScroll extends Vue {
 
@@ -37,7 +37,7 @@ export default class VPdfScroll extends Vue {
 <template lang="pug">
 
 	div.v-pdf-scroll(:class='{ horizontal }')
-		v-pdf-page(
+		v-pdf-render(
 			v-for='pageNum in pageCount',
 			:key='getPageKey(pageNum)',
 			value='pageNum',
@@ -50,3 +50,4 @@ export default class VPdfScroll extends Vue {
 <style lang="css" scoped>
 
 </style>
+ 

@@ -6,7 +6,6 @@ import typescript from 'rollup-plugin-typescript'
 import pug from 'vue-pug-plugin'
 
 const base = {
-	input: 'src/index.ts',
 	context: 'window',
 	plugins: [
 		resolve(),
@@ -27,6 +26,7 @@ const base = {
 export default [
 	{
 		...base,
+		input: 'src/index.ts',
 		external: [/node_modules/],
 		output: {
 			format: 'esm',
@@ -34,6 +34,7 @@ export default [
 		}
 	},{
 		...base,
+		input: 'src/browser.ts',
 		external: ['vue', 'pdfjs-dist'],
 		output: {
 			format: 'iife',

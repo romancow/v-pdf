@@ -1,5 +1,5 @@
 var app = new Vue({
-	components: {  VPdf: VPdf.VPdfPage },
+	components: {  VPdfPage: VPdf.Page },
 	el: '#app',
 	data: {
 		title: "VPdf Test",
