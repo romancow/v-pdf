@@ -1,17 +1,13 @@
+import pkg from './package.json'
 import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
 import vue from 'rollup-plugin-vue'
 import typescript from 'rollup-plugin-typescript'
 import pug from 'vue-pug-plugin'
 
-export default {
+const base = {
 	input: 'src/index.ts',
 	context: 'window',
-	output: {
-		format: 'esm',
-		file: 'build/v-pdf.esm.js'
-	},
-	external: ['vue', 'pdfjs-dist'],
 	plugins: [
 		resolve(),
 		commonjs(),
@@ -27,3 +23,26 @@ export default {
 		}),
 	]
 }
+
+export default [
+	{
+		...base,
+		external: [/node_modules/],
+		output: {
+			format: 'esm',
+			file: pkg.main
+		}
+	},{
+		...base,
+		external: ['vue', 'pdfjs-dist'],
+		output: {
+			format: 'iife',
+			file: "build/v-pdf.js",
+			name: "VPdf",
+			globals: {
+				vue: "Vue",
+				"pdfjs-dist": "pdfjsLib"
+			}
+		}
+	}
+]

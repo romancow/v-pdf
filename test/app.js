@@ -1,14 +1,11 @@
-import { VPdfPage as VPdf } from "../build/v-pdf.esm.js"
-	
 var app = new Vue({
-	components: { VPdf },
+	components: {  VPdf: VPdf.VPdfPage },
 	el: '#app',
 	data: {
 		title: "VPdf Test",
 		pdf: "file-sample.pdf",
 		currentPage: 1,
 		lastPage: 1
-
 	},
 	computed: {
 		isLastPage() {
