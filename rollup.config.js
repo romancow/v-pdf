@@ -4,6 +4,8 @@ import resolve from '@rollup/plugin-node-resolve'
 import vue from 'rollup-plugin-vue'
 import typescript from 'rollup-plugin-typescript'
 import pug from 'vue-pug-plugin'
+import replace from '@rollup/plugin-replace'
+import { terser } from 'rollup-plugin-terser'
 
 const base = {
 	context: 'window',
@@ -36,6 +38,13 @@ export default [
 		...base,
 		input: 'src/browser.ts',
 		external: ['vue', 'pdfjs-dist'],
+		plugins: [
+			...base.plugins,
+			replace({
+				preventAssignment: true,
+				values: { 'process.env.NODE_ENV': '"production"' }
+			})
+		],
 		output: {
 			format: 'iife',
 			file: "build/v-pdf.js",
@@ -43,7 +52,8 @@ export default [
 			globals: {
 				vue: "Vue",
 				"pdfjs-dist": "pdfjsLib"
-			}
+			},
+			plugins: [ terser() ]
 		}
 	}
 ]
