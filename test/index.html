@@ -17,6 +17,15 @@
 			.fade-enter, .fade-leave-to {
 				opacity: 0;
 			}
+
+			#pdf-viewer {
+				height: 100%;
+				max-width: 600px;
+			}
+
+			#pdf-viewer > canvas {
+				border: 1px solid gray;
+			}
 		</style>
 	</head>
 	<body>
@@ -25,7 +34,8 @@
 			<button :disabled="isFirstPage" @click="prevPage">&#8678;</button>
 			<span>Page {{ currentPage }}</span>
 			<button :disabled="isLastPage" @click="nextPage">&#8680;</button>
-			<v-pdf-page :src="pdf" :page="currentPage" transition="fade" @document-load="documentLoad" @error="logError"></v-pdf>
+			<v-pdf-scroll id="pdf-viewer" :src="pdf"></v-pdf-scroll>
+			<!-- <v-pdf-page id="pdf-viewer" :src="pdf" :page="currentPage" transition="fade" @document-load="documentLoad" @error="logError"></v-pdf> -->
 		</main>
 
 		<script src="app.js"></script>
