@@ -15,8 +15,8 @@ export default class VPdfScroll extends Vue {
 	@Prop({ type: Number, default: 1 })
 	readonly page!: number
 
-	@Prop({ type: Number, default: 1})
-	readonly scale!: number
+	@Prop({ type: Number, default: null })
+	readonly scale!: number | null
 
 	@Prop({ type: Boolean, default: false})
 	readonly horizontal!: boolean
@@ -71,7 +71,9 @@ export default class VPdfScroll extends Vue {
 			v-for='pageNum in pageCount',
 			:key='getPageKey(pageNum)',
 			:value='pages[pageNum - 1]',
-			:scale='scale'
+			:scale='scale',
+			:fit-width='!horizontal',
+			:fit-height='horizontal'
 		)
 
 </template>
@@ -81,11 +83,6 @@ export default class VPdfScroll extends Vue {
 
 	.v-pdf-scroll {
 		overflow: scroll;
-	}
-
-	.v-pdf-render {
-		width: 100%;
-		height: 100%;
 	}
 
 </style>

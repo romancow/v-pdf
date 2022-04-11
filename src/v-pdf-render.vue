@@ -5,26 +5,43 @@ import type { PDFPageProxy } from 'pdfjs-dist'
 @Component
 export default class VPdfRender extends Vue {
 
-	@Prop({ type: Object, default: null })
+	@Prop({ type: [Object, Promise], default: null })
 	readonly value!: Promise<PDFPageProxy | null> | PDFPageProxy | null
 
-	@Prop({ type: Number, default: 1 })
-	readonly scale!: number
+	@Prop({ type: Number, default: null })
+	readonly scale!: number | null
+
+	@Prop({ type: Boolean, default: false })
+	fitWidth!: boolean
+
+	@Prop({ type: Boolean, default: false })
+	fitHeight!: boolean
 
 	page: PDFPageProxy | null = null
+
+	get defaultViewport() {
+		const { page } = this
+		return page?.getViewport({ scale: 1 }) ?? null
+	}
+
+	get calculatedScale() {
+		const { scale, defaultViewport, fitWidth, fitHeight, $el } = this
+		if (scale != null) return scale
+
+		const { width: pdfWidth, height: pdfHeight } = defaultViewport ?? {}
+		const { width, height } = $el.getBoundingClientRect()
+		const widthScale = (fitWidth && pdfWidth) ? width / pdfWidth : 1
+		const heightScale = (fitHeight && pdfHeight) ? height / pdfHeight : 1
+		return Math.min(widthScale, heightScale, 1)
+	}
 
 	get pageNumber() {
 		return this.page?.pageNumber ?? 0
 	}
 
 	get viewport() {
-		const { scale, page } = this
-		return page?.getViewport({ scale })
-	}
-
-	get size() {
-		const { width = 0, height = 0 } = this.viewport ?? {}
-		return { width, height }
+		const { calculatedScale, page } = this
+		return page?.getViewport({ scale: calculatedScale })
 	}
 
 	get renderParams() {
@@ -61,9 +78,9 @@ export default class VPdfRender extends Vue {
 		v-else,
 		ref='canvas',
 		:data-page='pageNumber',
-		:data-scale='scale',
-		:width='size.width',
-		:height='size.height'
+		:data-scale='calculatedScale',
+		:width='viewport.width',
+		:height='viewport.height'
 	)
 
 </template>
