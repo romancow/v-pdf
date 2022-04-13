@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import PdfJs from 'pdfjs-dist'
-import type { PDFDocumentProxy/*, PDFPageProxy*/ } from 'pdfjs-dist'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 import VPdfRender from './v-pdf-render.vue'
 
 @Component({

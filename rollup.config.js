@@ -53,7 +53,7 @@ export default [
 				vue: "Vue",
 				"pdfjs-dist": "pdfjsLib"
 			},
-			plugins: [ terser() ]
+			plugins: [ terser({ keep_classnames: true }) ]
 		}
 	}
 ]
