@@ -1,5 +1,5 @@
 var app = new Vue({
-	components: {  VPdfPage: VPdf.Page, VPdfScroll: VPdf.Scroll },
+	components: {  VPdfPage: VPdf.Page, VPdfScroll: VPdf.Scroll, VPdfFlip: VPdf.Flip },
 	el: '#app',
 	data: {
 		title: "VPdf Test",
