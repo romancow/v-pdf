@@ -1,28 +1,10 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import type { PropType } from 'vue'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import PdfJs from 'pdfjs-dist'
-import { PageFlip, FlipSetting, FlipCorner } from 'page-flip'
+import { PageFlip, FlipCorner, SizeType } from 'page-flip'
+import PageFlipSetting from './page-flip-setting'
 import VPdfRender from './v-pdf-render.vue'
-
-const PageFlipSetting = function(type: PropType<any>) {
-	const prop = Prop({ type, default: null })
-	return function(target: VPdfFlip, propertyKey: keyof FlipSetting) {
-		PageFlipSetting.Props.push(propertyKey)
-		prop(target, propertyKey)
-	}
-}
-PageFlipSetting.Props = [] as (keyof FlipSetting)[]
-PageFlipSetting.get = function(component: VPdfFlip) {
-	const settings: Partial<FlipSetting> = {}
-	PageFlipSetting.Props.forEach(<K extends keyof FlipSetting>(prop: K) => {
-		const value = (component as Partial<FlipSetting>)[prop]
-		if (value != null)
-			settings[prop] = value
-	})
-	return settings
-}
 
 type FlipAnimate = boolean | FlipCorner
 namespace FlipAnimate {
