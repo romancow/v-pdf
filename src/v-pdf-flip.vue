@@ -13,7 +13,6 @@ namespace FlipAnimate {
 	}
 }
 
-
 @Component({
 	components: { VPdfRender }
 })
@@ -28,26 +27,59 @@ export default class VPdfFlip extends Vue {
 	@Prop({ type: Number, default: null })
 	readonly scale!: number | null
 
-	@PageFlipSetting(Number)
-	width!: number | null
+	@PageFlipSetting.Number
+	readonly width!: number | null
 
-	@PageFlipSetting(Number)
-	height!: number
+	@PageFlipSetting.Number
+	readonly height!: number
 
-	@PageFlipSetting(Boolean)
-	drawShadow!: boolean | null
+	@PageFlipSetting.Boolean('size', stretch => stretch ? SizeType.STRETCH: undefined)
+	readonly stretch!: boolean
 
-	@PageFlipSetting(Number)
-	flippingTime!: number | null
+	@PageFlipSetting.Number
+	readonly minWidth!: number | null
 
-	@PageFlipSetting(Boolean)
-	usePortrait!: boolean | null
+	@PageFlipSetting.Number
+	readonly maxWidth!: number | null
 
-	@PageFlipSetting(Number)
-	maxShadowOpacity!: number | null
+	@PageFlipSetting.Number
+	readonly minHeight!: number | null
 
-	@PageFlipSetting(Boolean)
-	showCover!: boolean | null
+	@PageFlipSetting.Number
+	readonly maxHeight!: number | null
+
+	@PageFlipSetting.Boolean
+	readonly drawShadow!: boolean | null
+
+	@PageFlipSetting.Inverse('drawShadow')
+	readonly noShadow!: boolean | null
+
+	@PageFlipSetting.Number
+	readonly flippingTime!: number | null
+
+	@PageFlipSetting.Boolean
+	readonly usePortrait!: boolean | null
+
+	@PageFlipSetting.Inverse('usePortrait')
+	readonly noPortrait!: boolean | null
+
+	@PageFlipSetting.Boolean
+	autoSize!: boolean | null
+
+	@PageFlipSetting.Inverse('autoSize')
+	readonly noAutoSize!: boolean | null
+
+	@PageFlipSetting.Number
+	readonly maxShadowOpacity!: number | null
+
+	@PageFlipSetting.Boolean
+	readonly showCover!: boolean | null
+
+	@PageFlipSetting.Boolean
+	mobileScrollSupport!: boolean | null
+
+	@PageFlipSetting.Inverse('mobileScrollSupport')
+	readonly noMobileScrollSupport!: boolean | null
 
 	pageFlip!: PageFlip | null
 	document: PDFDocumentProxy | null = null
@@ -131,7 +163,7 @@ export default class VPdfFlip extends Vue {
 		const { settings } = this
 		const elem = this.$el as HTMLElement
 		const pageFlip = this.pageFlip = new PageFlip(elem, settings)
-		pageFlip.on('flip',ev => this.pageIndex = ev.data as number)
+		pageFlip.on('flip', ev => this.pageIndex = ev.data as number)
 		const pages = elem.querySelectorAll<HTMLElement>(".v-pdf-flip-page")
 		pageFlip.loadFromHTML(pages)
 	}
