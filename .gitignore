@@ -115,6 +115,5 @@ tmp/
 # nosync directory
 .nosync/
 
-# TypeScript compiled & types
+# TypeScript compiled
 /build
-/types

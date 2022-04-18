@@ -4,13 +4,13 @@
 	"description": "Vue component for showing PDFs using PDF.js",
 	"main": "build/v-pdf.mjs",
 	"type": "module",
-	"types": "types/v-pdf.d.ts",
+	"types": "types/index.d.ts",
 	"files": [
 		"build/",
 		"types/"
 	],
 	"scripts": {
-		"clean": "rimraf ./build/* ./types/*",
+		"clean": "rimraf ./build/*",
 		"prebuild": "npm run clean",
 		"build": "rollup -c",
 		"prepare": "npm run build"
@@ -33,7 +33,6 @@
 	"homepage": "https://github.com/romancow/v-pdf#readme",
 	"dependencies": {
 		"page-flip": "^2.0.7",
-		"pdfjs-dist": "^2.13.216",
 		"vue-class-component": "^7.2.6",
 		"vue-property-decorator": "^9.1.2"
 	},
@@ -42,6 +41,7 @@
 		"@rollup/plugin-node-resolve": "^13.1.3",
 		"@rollup/plugin-replace": "^4.0.0",
 		"@types/page-flip": "^2.0.0",
+		"pdfjs-dist": "^2.13.216",
 		"rimraf": "^3.0.2",
 		"rollup": "^2.70.1",
 		"rollup-plugin-terser": "^7.0.2",
@@ -53,6 +53,7 @@
 		"vue-template-compiler": "^2.6.14"
 	},
 	"peerDependencies": {
+		"pdfjs-dist": "2",
 		"vue": "2"
 	}
 }
