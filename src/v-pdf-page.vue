@@ -30,7 +30,7 @@ export default class VPdfPage extends VPdfBase {
 
 	div.v-pdf-page
 		transition(:name='transition')
-			v-pdf-render(:key='src + "#" + currentPage', :value='documentPage', :scale='scale')
+			v-pdf-render(:key='getPageKey(currentPage)', :value='documentPage', :scale='scale')
 
 </template>
 
