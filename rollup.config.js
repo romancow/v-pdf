@@ -50,7 +50,7 @@ export default [
 		],
 		output: {
 			format: 'iife',
-			file: "build/v-pdf.js",
+			file: "build/v-pdf.min.js",
 			name: "VPdf",
 			globals: {
 				vue: "Vue",

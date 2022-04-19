@@ -2,7 +2,7 @@
 	"name": "@romancow/v-pdf",
 	"version": "1.0.0-alpha.3",
 	"description": "Vue component for showing PDFs using PDF.js",
-	"main": "build/v-pdf.mjs",
+	"main": "build/v-pdf.esm.js",
 	"type": "module",
 	"types": "types/index.d.ts",
 	"files": [
