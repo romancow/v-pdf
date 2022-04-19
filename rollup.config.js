@@ -29,7 +29,10 @@ export default [
 	{
 		...base,
 		input: 'src/index.ts',
-		external: [/node_modules/],
+		external: [
+			...Object.keys(pkg.dependencies),
+			...Object.keys(pkg.peerDependencies)
+		],
 		output: {
 			format: 'esm',
 			file: pkg.main
@@ -37,7 +40,7 @@ export default [
 	},{
 		...base,
 		input: 'src/browser.ts',
-		external: ['vue', 'pdfjs-dist'],
+		external: Object.keys(pkg.peerDependencies),
 		plugins: [
 			...base.plugins,
 			replace({
