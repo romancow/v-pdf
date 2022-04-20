@@ -20,7 +20,7 @@ export default class VPdfFlip extends VPdfBase {
 	@PageFlipSetting.Number
 	readonly height!: number
 
-	@PageFlipSetting.Boolean('size', stretch => stretch ? SizeType.STRETCH: undefined)
+	@PageFlipSetting.Boolean('size', stretch => stretch ? <SizeType>"stretch" : undefined)
 	readonly stretch!: boolean
 
 	@PageFlipSetting.Number
