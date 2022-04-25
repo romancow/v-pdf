@@ -18,6 +18,7 @@ export default class VPdfRender extends Vue {
 	fitHeight!: boolean
 
 	page: PDFPageProxy | null = null
+	isLoading: boolean = false
 
 	get defaultViewport() {
 		const { page } = this
@@ -52,9 +53,8 @@ export default class VPdfRender extends Vue {
 			null : { canvasContext, viewport }
 	}
 
-	get isLoading() {
-		const { value, page } = this
-		return (value != null) && (page ==null)
+	get hasPage() {
+		return !!this.page
 	}
 
 	get canvasWidth() {
@@ -74,7 +74,9 @@ export default class VPdfRender extends Vue {
 
 	@Watch("value", { immediate: true })
 	async handleValuePromise(value: VPdfRender['value']) {
+		this.isLoading = value != null
 		this.page = await value
+		this.isLoading = false
 	}
 }
 </script>
@@ -82,17 +84,17 @@ export default class VPdfRender extends Vue {
 
 <template lang="pug">
 
-	div.v-pdf-render.loading(v-if='isLoading')
-		slot(name='loading')
+	div.v-pdf-render(:class='{ loading: isLoading }')
+		slot(name='loading', v-if='isLoading')
 			span Loading page...
-	canvas.v-pdf-render(
-		v-else,
-		ref='canvas',
-		:data-page='pageNumber',
-		:data-scale='calculatedScale',
-		:width='canvasWidth',
-		:height='canvasHeight'
-	)
+		canvas(
+			v-else-if='hasPage',
+			ref='canvas',
+			:data-page='pageNumber',
+			:data-scale='calculatedScale',
+			:width='canvasWidth',
+			:height='canvasHeight'
+		)
 
 </template>
 
