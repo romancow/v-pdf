@@ -84,7 +84,7 @@ export default class VPdfRender extends Vue {
 
 <template lang="pug">
 
-	div.v-pdf-render(:class='{ loading: isLoading }')
+	.v-pdf-render(:class='{ loading: isLoading }')
 		slot(name='loading', v-if='isLoading')
 			span Loading page...
 		canvas(
@@ -100,5 +100,10 @@ export default class VPdfRender extends Vue {
 
 
 <style lang="css" scoped>
+
+	.v-pdf-render {
+		border: 1px solid rgba(0,0,0,0.5);
+		overflow: scroll;
+	}
 
 </style>
