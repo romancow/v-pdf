@@ -57,6 +57,16 @@ export default class VPdfRender extends Vue {
 		return (value != null) && (page ==null)
 	}
 
+	get canvasWidth() {
+		const { viewport } = this
+		return viewport?.width
+	}
+
+	get canvasHeight() {
+		const { viewport } = this
+		return viewport?.height
+	}
+
 	updated() {
 		const { page, renderParams } = this
 		renderParams && page?.render(renderParams)
@@ -79,8 +89,8 @@ export default class VPdfRender extends Vue {
 		ref='canvas',
 		:data-page='pageNumber',
 		:data-scale='calculatedScale',
-		:width='viewport.width',
-		:height='viewport.height'
+		:width='canvasWidth',
+		:height='canvasHeight'
 	)
 
 </template>
