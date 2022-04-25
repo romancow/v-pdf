@@ -110,18 +110,23 @@ export default class VPdfFlip extends VPdfBase {
 			pageFlip?.turnToPage(pageIndex)
 	}
 
+	getPages() {
+		return this.$el.querySelectorAll<HTMLElement>(".v-pdf-flip-page")
+	}
+
 	async mounted() {
 		await this.$nextTick()
 		const { settings } = this
 		const elem = this.$el as HTMLElement
 		const pageFlip = this.pageFlip = new PageFlip(elem, settings)
 		pageFlip.on('flip', ev => this.pageIndex = ev.data as number)
-		const pages = elem.querySelectorAll<HTMLElement>(".v-pdf-flip-page")
+		const pages = this.getPages()
 		pageFlip.loadFromHTML(pages)
 	}
 
-	updated() {
-		const pages = this.$el.querySelectorAll<HTMLElement>(".v-pdf-flip-page")
+	async updated() {
+		await this.$nextTick()
+		const pages = this.getPages()
 		this.pageFlip?.updateFromHtml(pages)
 	}
 
@@ -135,13 +140,40 @@ export default class VPdfFlip extends VPdfBase {
 
 <template lang="pug">
 
-	div.v-pdf-flip
-		div.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)')
-			v-pdf-render(:value='page', :scale='scale')
+	.v-pdf-flip
+		.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)')
+			v-pdf-render(fit-width, :value='page', :scale='scale')
+		//- v-pdf-render.v-pdf-flip-page(
+		//- 	v-for='(page, num) in pages',
+		//- 	:key='getPageKey(num)',
+		//- 	:value='page',
+		//- 	:scale='scale',
+		//- 	fit-width
+		//- )
 
 </template>
 
 
 <style lang="css" scoped>
+
+	.v-pdf-flip-page {
+		display: block !important;
+		width: 50%;
+		height: 100%;
+	}
+
+	.v-pdf-flip-page .v-pdf-render {
+		width: 100%;
+	}
+
+	/* Undo some conflicting internal styles Page Flip has for canvas elements */
+	.v-pdf-flip-page .v-pdf-render ::v-deep canvas {
+		position: unset;
+		width: unset;
+		height: unset;
+		left: unset;
+		right: unset
+	}	
+
 
 </style>
