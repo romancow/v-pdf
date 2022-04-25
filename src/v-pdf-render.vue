@@ -84,6 +84,7 @@ export default class VPdfRender extends Vue {
 
 	div.v-pdf-render.loading(v-if='isLoading')
 		slot(name='loading')
+			span Loading page...
 	canvas.v-pdf-render(
 		v-else,
 		ref='canvas',
