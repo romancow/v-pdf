@@ -80,8 +80,10 @@ export default class VPdfFlip extends VPdfBase {
 
 	get settings() {
 		const settings = PageFlipSetting.get(this)
-		const { width, height } = this.$el.getBoundingClientRect()
-		return Object.assign({ width: width / 2, height}, settings)
+		const { pageCount, $el } = this
+		const { width: clientWidth, height } = $el.getBoundingClientRect()
+		const width = clientWidth / ((pageCount <= 1) ? 1 : 2)
+		return Object.assign({ width, height }, settings)
 	}
 
 	flipNext(animate: FlipAnimate = true) {
@@ -140,9 +142,9 @@ export default class VPdfFlip extends VPdfBase {
 
 <template lang="pug">
 
-	.v-pdf-flip
+	.v-pdf-flip(:data-pages='pageCount')
 		.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)')
-			v-pdf-render(fit-width, :value='page', :scale='scale')
+			v-pdf-render(fit-width, fit-height, :value='page', :scale='scale')
 		//- v-pdf-render.v-pdf-flip-page(
 		//- 	v-for='(page, num) in pages',
 		//- 	:key='getPageKey(num)',
@@ -162,8 +164,13 @@ export default class VPdfFlip extends VPdfBase {
 		height: 100%;
 	}
 
+	.v-pdf-flip[data-pages="1"] .v-pdf-flip-page {
+		width: 100%;
+	}
+
 	.v-pdf-flip-page .v-pdf-render {
 		width: 100%;
+		height: 100%;
 	}
 
 	/* Undo some conflicting internal styles Page Flip has for canvas elements */
