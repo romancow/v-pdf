@@ -24,12 +24,13 @@
 				/* height: 100%; */
 				width: 600px;
 				max-width: 600px;
-				height: 800px !important
+				height: 800px !important;
 			}
 
 			#pdf-viewer.v-pdf-flip {
-				width: 800px;
-				height: 842px
+				/* width: 800px; */
+				height: 842px;
+				width: 100%;
 			}
 		</style>
 	</head>
@@ -39,8 +40,8 @@
 			<button :disabled="isFirstPage" @click="prevPage">&#8678;</button>
 			<span>Page {{ currentPage }}</span>
 			<button :disabled="isLastPage" @click="nextPage">&#8680;</button>
-			<!-- <v-pdf-flip id="pdf-viewer" :src="pdf" :page.sync="currentPage" @document-load="documentLoad" @error="logError"></v-pdf-flip> -->
-			<v-pdf-scroll id="pdf-viewer" :src="pdf"></v-pdf-scroll>
+			<v-pdf-flip id="pdf-viewer" :src="pdf" :page.sync="currentPage" @document-load="documentLoad" @error="logError"></v-pdf-flip>
+			<!-- <v-pdf-scroll id="pdf-viewer" :src="pdf"></v-pdf-scroll> -->
 			<!-- <v-pdf-page id="pdf-viewer" :src="pdf" :page="currentPage" transition="fade" @document-load="documentLoad" @error="logError"></v-pdf> -->
 		</main>
 
