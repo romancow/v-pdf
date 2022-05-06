@@ -11,12 +11,12 @@ function PageFlipSetting<T extends Vue>(type: PropType<any>) {
 	const prop = Prop({ type, default: null })
 	return function(...args: [...Parameters<SettingDecorator<T>>]) {
 		const isFactory = (args[0] == null) || (args[1] == null) || (args[1] instanceof Function)
-		if (!isFactory)
-			return prop(...<unknown>args as Parameters<PropDecorator>)
-		else return function(target: T, propertyKey: string) {
-			PageFlipSetting.Props.push([propertyKey, args[0], args[1]])
+		const [setting, valueFn] = isFactory ? args : []
+		const decorator = function(target: T, propertyKey: string) {
+			PageFlipSetting.Props.push([propertyKey, setting, valueFn])
 			prop(target, propertyKey)
 		}
+		return isFactory ? decorator : decorator(...args as [any, any])
 	} as SettingDecorator<T>
 }
 PageFlipSetting.Boolean = PageFlipSetting(Boolean)
