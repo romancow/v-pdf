@@ -36,9 +36,9 @@ export default class VPdfRender extends Vue {
 		if (scale != null) return scale
 
 		const { width: pdfWidth, height: pdfHeight } = defaultViewport ?? {}
-		const { width, height } = $el.getBoundingClientRect()
-		const widthScale = (fitWidth && pdfWidth) ? width / pdfWidth : 1
-		const heightScale = (fitHeight && pdfHeight) ? height / pdfHeight : 1
+		const { width, height } = $el?.parentElement?.getBoundingClientRect() ?? {}
+		const widthScale = (fitWidth && pdfWidth && width) ? width / pdfWidth : 1
+		const heightScale = (fitHeight && pdfHeight && height) ? height / pdfHeight : 1
 		return Math.min(widthScale, heightScale, 1)
 	}
 
@@ -128,7 +128,8 @@ export default class VPdfRender extends Vue {
 
 	.v-pdf-render {
 		border: 1px solid rgba(0,0,0,0.5);
-		overflow: scroll;
+		overflow: hidden;
+		box-sizing: border-box;
 	}
 
 </style>
