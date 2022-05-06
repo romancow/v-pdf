@@ -12,10 +12,16 @@ export default class VPdfRender extends Vue {
 	readonly scale!: number | null
 
 	@Prop({ type: Boolean, default: false })
-	fitWidth!: boolean
+	readonly fitWidth!: boolean
 
 	@Prop({ type: Boolean, default: false })
-	fitHeight!: boolean
+	readonly fitHeight!: boolean
+
+	@Prop({ type: Number, default: null })
+	readonly loadingWidth!: number | null
+
+	@Prop({ type: Number, default: null })
+	readonly loadingHeight!: number | null
 
 	page: PDFPageProxy | null = null
 	isLoading: boolean = false
@@ -67,6 +73,18 @@ export default class VPdfRender extends Vue {
 		return viewport?.height
 	}
 
+	get style() {
+		const { viewport, loadingWidth, loadingHeight, hasPage, isLoading } = this
+		const sizes: (number | null | undefined)[] = (hasPage && !isLoading) ?
+			[viewport?.width, viewport?.height] :
+			[loadingWidth, loadingHeight]
+		return sizes.reduce((rules, size, index) => {
+			if (size != null)
+				rules[index ? "height" : "width"] = `${size}px`
+			return rules
+		}, {} as { [rule: string]: string })
+	}
+
 	updated() {
 		const { page, renderParams } = this
 		renderParams && page?.render(renderParams)
@@ -84,7 +102,7 @@ export default class VPdfRender extends Vue {
 
 <template lang="pug">
 
-	.v-pdf-render(:class='{ loading: isLoading }')
+	.v-pdf-render(:class='{ loading: isLoading }', :style='style')
 		slot(name='loading', v-if='isLoading')
 			span Loading page...
 		canvas(
