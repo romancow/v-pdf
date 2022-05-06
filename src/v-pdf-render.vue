@@ -85,7 +85,6 @@ export default class VPdfRender extends Vue {
 		}, {} as { [rule: string]: string })
 	}
 
-	updated() {
 	async updated() {
 		const { page, renderParams } = this
 		await (renderParams && page?.render(renderParams))

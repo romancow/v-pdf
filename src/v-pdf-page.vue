@@ -9,6 +9,9 @@ export default class VPdfPage extends VPdfBase {
 	@Prop({ type: String, default: null })
 	readonly transition!: string | null
 
+	@Prop({ type: Boolean, default: false })
+	readonly contain!: boolean
+
 	documentPage: PDFPageProxy | null = null
 
 	get currentPage() {
@@ -29,12 +32,29 @@ export default class VPdfPage extends VPdfBase {
 <template lang="pug">
 
 	div.v-pdf-page
-		transition(:name='transition')
-			v-pdf-render(:key='getPageKey(currentPage)', :value='documentPage', :scale='scale')
+		transition(:name='transition', mode='out-in')
+			v-pdf-render(
+				:key='getPageKey(currentPage)',
+				:value='documentPage',
+				:scale='scale',
+				:fit-width='contain',
+				:fit-height='contain'
+			)
 
 </template>
 
 
 <style lang="css" scoped>
+
+	.v-pdf-page {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.v-pdf-page .v-pdf-render.loading {
+		width: 100%;
+		height: 100%;
+	}
 
 </style>
