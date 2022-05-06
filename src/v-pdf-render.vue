@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch, Emit } from 'vue-property-decorator'
 import type { PDFPageProxy } from 'pdfjs-dist'
 
 @Component
@@ -86,8 +86,10 @@ export default class VPdfRender extends Vue {
 	}
 
 	updated() {
+	async updated() {
 		const { page, renderParams } = this
-		renderParams && page?.render(renderParams)
+		await (renderParams && page?.render(renderParams))
+		this.rendered()
 	}
 
 	@Watch("value", { immediate: true })
@@ -95,6 +97,11 @@ export default class VPdfRender extends Vue {
 		this.isLoading = value != null
 		this.page = await value
 		this.isLoading = false
+	}
+
+	@Emit()
+	rendered() {
+		return this.page
 	}
 }
 </script>
