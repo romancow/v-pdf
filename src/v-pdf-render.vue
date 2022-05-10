@@ -100,7 +100,8 @@ export default class VPdfRender extends Vue {
 
 	@Emit()
 	rendered() {
-		return this.page
+		const { page, viewport } = this
+		return { page, viewport }
 	}
 }
 </script>

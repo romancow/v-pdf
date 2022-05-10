@@ -2,6 +2,7 @@
 import { Component, Watch } from 'vue-property-decorator'
 import VPdfBase from './v-pdf-base'
 import { PageFlip, FlipCorner, SizeType } from 'page-flip'
+import type { PageViewport } from 'pdfjs-dist'
 import PageFlipSetting from './page-flip-setting'
 
 type FlipAnimate = boolean | FlipCorner
@@ -68,7 +69,22 @@ export default class VPdfFlip extends VPdfBase {
 	@PageFlipSetting.Inverse('mobileScrollSupport')
 	readonly noMobileScrollSupport!: boolean | null
 
+	renderedWidth: number | null = null
+	renderedHeight: number | null = null
 	pageFlip!: PageFlip | null
+
+	get pageWidth() {
+		return this.width ?? this.renderedWidth
+	}
+
+	get pageHeight() {
+		return this.height ?? this.renderedHeight
+	}
+
+	get isSized() {
+		const { pageWidth, pageHeight } = this
+		return (pageWidth != null) && (pageHeight != null)
+	}
 
 	get pageIndex() {
 		return this.pageFlip?.getCurrentPageIndex() ?? -1
@@ -80,10 +96,8 @@ export default class VPdfFlip extends VPdfBase {
 
 	get settings() {
 		const settings = PageFlipSetting.get(this)
-		const { pageCount, $el } = this
-		const { width: clientWidth, height } = $el.getBoundingClientRect()
-		const width = clientWidth / ((pageCount <= 1) ? 1 : 2)
-		return Object.assign({ width, height }, settings)
+		const { renderedWidth: width, renderedHeight: height } = this
+		return Object.assign({ width, height, autoSize: false }, settings)
 	}
 
 	flipNext(animate: FlipAnimate = true) {
@@ -118,6 +132,13 @@ export default class VPdfFlip extends VPdfBase {
 
 	async mounted() {
 		await this.$nextTick()
+		this.setPageFlip(this.isSized)
+	}
+
+	@Watch('isSized')
+	setPageFlip(isSized: boolean) {
+		if (!isSized) return
+
 		const { settings } = this
 		const elem = this.$el as HTMLElement
 		const pageFlip = this.pageFlip = new PageFlip(elem, settings)
@@ -136,15 +157,27 @@ export default class VPdfFlip extends VPdfBase {
 		this.pageFlip?.destroy()
 	}
 
+	setPageSize({ viewport }: { viewport: PageViewport }) {
+		this.renderedWidth ??= viewport.width
+		this.renderedHeight ??= viewport.height
+	}
+
 }
 </script>
 
 
 <template lang="pug">
 
-	.v-pdf-flip(:data-pages='pageCount')
+	.v-pdf-flip(:data-pages='pageCount', :class='{ loading: !isSized}')
 		.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)')
-			v-pdf-render(fit-width, fit-height, :value='page', :scale='scale')
+			v-pdf-render(
+				fit-width, fit-height,
+				:value='page',
+				:scale='scale',
+				:loadingWidth='pageWidth',
+				:loadingHeight='pageHeight',
+				@rendered='setPageSize'
+			)
 		//- v-pdf-render.v-pdf-flip-page(
 		//- 	v-for='(page, num) in pages',
 		//- 	:key='getPageKey(num)',
@@ -158,19 +191,21 @@ export default class VPdfFlip extends VPdfBase {
 
 <style lang="css" scoped>
 
+	.v-pdf-flip {
+		overflow: hidden;
+	}
+
 	.v-pdf-flip-page {
-		display: block !important;
+		display: inline-block;
+	}
+
+	.v-pdf-flip.loading .v-pdf-flip-page:not(.stf__item) {
 		width: 50%;
 		height: 100%;
 	}
 
-	.v-pdf-flip[data-pages="1"] .v-pdf-flip-page {
+	.v-pdf-flip.loading[data-pages="1"] .v-pdf-flip-page:not(.stf__item) {
 		width: 100%;
-	}
-
-	.v-pdf-flip-page .v-pdf-render {
-		width: 100%;
-		height: 100%;
 	}
 
 	/* Undo some conflicting internal styles Page Flip has for canvas elements */
