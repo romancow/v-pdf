@@ -1,21 +1,9 @@
 <script lang="ts">
-import { Vue, Component, Prop, Watch, Emit } from 'vue-property-decorator'
-import type { PDFPageProxy } from 'pdfjs-dist'
+import { Component, Prop, Emit } from 'vue-property-decorator'
+import VPdfViewport from './v-pdf-viewport'
 
 @Component
-export default class VPdfRender extends Vue {
-
-	@Prop({ type: [Object, Promise], default: null })
-	readonly value!: Promise<PDFPageProxy | null> | PDFPageProxy | null
-
-	@Prop({ type: Number, default: null })
-	readonly scale!: number | null
-
-	@Prop({ type: Boolean, default: false })
-	readonly fitWidth!: boolean
-
-	@Prop({ type: Boolean, default: false })
-	readonly fitHeight!: boolean
+export default class VPdfRender extends VPdfViewport {
 
 	@Prop({ type: Number, default: null })
 	readonly loadingWidth!: number | null
@@ -23,32 +11,8 @@ export default class VPdfRender extends Vue {
 	@Prop({ type: Number, default: null })
 	readonly loadingHeight!: number | null
 
-	page: PDFPageProxy | null = null
-	isLoading: boolean = false
-
-	get defaultViewport() {
-		const { page } = this
-		return page?.getViewport({ scale: 1 }) ?? null
-	}
-
-	get calculatedScale() {
-		const { scale, defaultViewport, fitWidth, fitHeight, $el } = this
-		if (scale != null) return scale
-
-		const { width: pdfWidth, height: pdfHeight } = defaultViewport ?? {}
-		const { width, height } = $el?.parentElement?.getBoundingClientRect() ?? {}
-		const widthScale = (fitWidth && pdfWidth && width) ? width / pdfWidth : 1
-		const heightScale = (fitHeight && pdfHeight && height) ? height / pdfHeight : 1
-		return Math.min(widthScale, heightScale, 1)
-	}
-
 	get pageNumber() {
 		return this.page?.pageNumber ?? 0
-	}
-
-	get viewport() {
-		const { calculatedScale, page } = this
-		return page?.getViewport({ scale: calculatedScale })
 	}
 
 	get renderParams() {
@@ -89,13 +53,6 @@ export default class VPdfRender extends Vue {
 		const { page, renderParams } = this
 		await (renderParams && page?.render(renderParams))
 		this.rendered()
-	}
-
-	@Watch("value", { immediate: true })
-	async handleValuePromise(value: VPdfRender['value']) {
-		this.isLoading = value != null
-		this.page = await value
-		this.isLoading = false
 	}
 
 	@Emit()
