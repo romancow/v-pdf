@@ -4,6 +4,7 @@ import VPdfBase from './v-pdf-base'
 import { PageFlip, FlipCorner, SizeType } from 'page-flip'
 import type { PageViewport } from 'pdfjs-dist'
 import PageFlipSetting from './page-flip-setting'
+import VPdfViewport from './v-pdf-viewport'
 
 type FlipAnimate = boolean | FlipCorner
 namespace FlipAnimate {
@@ -12,7 +13,9 @@ namespace FlipAnimate {
 	}
 }
 
-@Component
+@Component({
+	components: { VPdfViewport }
+})
 export default class VPdfFlip extends VPdfBase {
 
 	@PageFlipSetting.Number
@@ -81,7 +84,7 @@ export default class VPdfFlip extends VPdfBase {
 		return this.height ?? this.renderedHeight
 	}
 
-	get isSized() {
+	get hasSize() {
 		const { pageWidth, pageHeight } = this
 		return (pageWidth != null) && (pageHeight != null)
 	}
@@ -94,6 +97,11 @@ export default class VPdfFlip extends VPdfBase {
 		this.$emit('update:page', index + 1)
 	}
 
+	get currentPage() {
+		const { pages, page } = this
+		return pages[page - 1]
+	}
+
 	get settings() {
 		const settings = PageFlipSetting.get(this)
 		const { renderedWidth: width, renderedHeight: height } = this
@@ -102,6 +110,7 @@ export default class VPdfFlip extends VPdfBase {
 
 	get pageStyle() {
 		const { renderedWidth: width, renderedHeight: height } = this
+		// TODO: use decorators instead of prop names?
 		const props: (keyof VPdfFlip)[]  = ["width", "minWidth", "maxWidth", "height", "minHeight", "maxHeight"]
 		return props.reduce((style, prop) => {
 			const value = this[prop]
@@ -143,21 +152,20 @@ export default class VPdfFlip extends VPdfBase {
 
 	async mounted() {
 		await this.$nextTick()
-		this.setPageFlip(this.isSized)
+		this.setPageFlip(this.hasSize)
 	}
 
-	@Watch('isSized')
-	setPageFlip(isSized: boolean) {
-		if (!isSized) return
+	@Watch('hasSize')
+	async setPageFlip(hasSize: boolean) {
+		if (!hasSize) return
 
-		setTimeout(() => {
-			const { settings } = this
-			const elem = this.$el as HTMLElement
-			const pageFlip = this.pageFlip = new PageFlip(elem, settings)
-			pageFlip.on('flip', ev => this.pageIndex = ev.data as number)
-			const pages = this.getPages()
-			pageFlip.loadFromHTML(pages)
-		}, 1000)
+		await this.$nextTick()
+		const { settings } = this
+		const elem = this.$el as HTMLElement
+		const pageFlip = this.pageFlip = new PageFlip(elem, settings)
+		pageFlip.on('flip', ev => this.pageIndex = ev.data as number)
+		const pages = this.getPages()
+		pageFlip.loadFromHTML(pages)
 	}
 
 	async updated() {
@@ -171,8 +179,8 @@ export default class VPdfFlip extends VPdfBase {
 	}
 
 	setPageSize({ viewport }: { viewport: PageViewport }) {
-		this.renderedWidth ??= viewport.width
-		this.renderedHeight ??= viewport.height
+		this.renderedWidth = viewport.width
+		this.renderedHeight = viewport.height
 	}
 
 }
@@ -181,13 +189,19 @@ export default class VPdfFlip extends VPdfBase {
 
 <template lang="pug">
 
-	.v-pdf-flip(:data-pages='pageCount', :class='{ loading: !isSized}')
-		.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)', :style="pageStyle")
+	.v-pdf-flip(:data-pages='pageCount', :class='{ loading: !hasSize}')
+		.v-pdf-viewport(v-if='!hasSize', :style='pageStyle')
+			v-pdf-viewport(
+				fit-width, fit-height,
+				:value='currentPage',
+				:scale='scale',
+				@loaded='setPageSize'
+			)
+		.v-pdf-flip-page(v-else, v-for='(page, num) in pages', :key='getPageKey(num)', :style='pageStyle')
 			v-pdf-render(
 				fit-width, fit-height,
 				:value='page',
-				:scale='scale',
-				@rendered='setPageSize'
+				:scale='scale'
 			)
 		//- v-pdf-render.v-pdf-flip-page(
 		//- 	v-for='(page, num) in pages',
@@ -202,20 +216,17 @@ export default class VPdfFlip extends VPdfBase {
 
 <style lang="css" scoped>
 
-	.v-pdf-flip {
-		overflow: hidden;
-	}
-
+	.v-pdf-viewport,
 	.v-pdf-flip-page {
 		display: inline-block;
 	}
 
-	.v-pdf-flip.loading .v-pdf-flip-page:not(.stf__item) {
+	.v-pdf-viewport {
 		width: 50%;
 		height: 100%;
 	}
 
-	.v-pdf-flip.loading[data-pages="1"] .v-pdf-flip-page:not(.stf__item) {
+	.v-pdf-flip[data-pages="1"] .v-pdf-viewport {
 		width: 100%;
 	}
 
