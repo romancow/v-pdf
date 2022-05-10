@@ -97,7 +97,18 @@ export default class VPdfFlip extends VPdfBase {
 	get settings() {
 		const settings = PageFlipSetting.get(this)
 		const { renderedWidth: width, renderedHeight: height } = this
-		return Object.assign({ width, height, autoSize: false }, settings)
+		return Object.assign({ width, height }, settings)
+	}
+
+	get pageStyle() {
+		const { renderedWidth: width, renderedHeight: height } = this
+		const props: (keyof VPdfFlip)[]  = ["width", "minWidth", "maxWidth", "height", "minHeight", "maxHeight"]
+		return props.reduce((style, prop) => {
+			const value = this[prop]
+			if (value != null)
+				style[prop] = `${value}px`
+			return style
+		}, { width, height } as { [r: string]: string | null })
 	}
 
 	flipNext(animate: FlipAnimate = true) {
@@ -139,12 +150,14 @@ export default class VPdfFlip extends VPdfBase {
 	setPageFlip(isSized: boolean) {
 		if (!isSized) return
 
-		const { settings } = this
-		const elem = this.$el as HTMLElement
-		const pageFlip = this.pageFlip = new PageFlip(elem, settings)
-		pageFlip.on('flip', ev => this.pageIndex = ev.data as number)
-		const pages = this.getPages()
-		pageFlip.loadFromHTML(pages)
+		setTimeout(() => {
+			const { settings } = this
+			const elem = this.$el as HTMLElement
+			const pageFlip = this.pageFlip = new PageFlip(elem, settings)
+			pageFlip.on('flip', ev => this.pageIndex = ev.data as number)
+			const pages = this.getPages()
+			pageFlip.loadFromHTML(pages)
+		}, 1000)
 	}
 
 	async updated() {
@@ -169,13 +182,11 @@ export default class VPdfFlip extends VPdfBase {
 <template lang="pug">
 
 	.v-pdf-flip(:data-pages='pageCount', :class='{ loading: !isSized}')
-		.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)')
+		.v-pdf-flip-page(v-for='(page, num) in pages', :key='getPageKey(num)', :style="pageStyle")
 			v-pdf-render(
 				fit-width, fit-height,
 				:value='page',
 				:scale='scale',
-				:loadingWidth='pageWidth',
-				:loadingHeight='pageHeight',
 				@rendered='setPageSize'
 			)
 		//- v-pdf-render.v-pdf-flip-page(
