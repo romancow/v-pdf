@@ -109,7 +109,11 @@ export default class VPdfFlip extends VPdfBase {
 	}
 
 	get pageStyle() {
-		const { renderedWidth: width, renderedHeight: height } = this
+		const { renderedWidth, renderedHeight } = this
+		const initial: { [r: string]: string | null } = { 
+			width: `${renderedWidth}px`,
+			height: `${renderedHeight}px`
+		}
 		// TODO: use decorators instead of prop names?
 		const props: (keyof VPdfFlip)[]  = ["width", "minWidth", "maxWidth", "height", "minHeight", "maxHeight"]
 		return props.reduce((style, prop) => {
@@ -117,7 +121,7 @@ export default class VPdfFlip extends VPdfBase {
 			if (value != null)
 				style[prop] = `${value}px`
 			return style
-		}, { width, height } as { [r: string]: string | null })
+		}, initial)
 	}
 
 	flipNext(animate: FlipAnimate = true) {
