@@ -2,6 +2,11 @@ import { Vue, Component, Prop, Watch, Emit } from 'vue-property-decorator'
 import type { PDFPageProxy } from 'pdfjs-dist'
 import { CreateElement } from 'vue'
 
+function calcScale(dimension: number, fit: number, margin = 0) {
+	const wMargin =  Math.max(fit - 2 * margin, 0)
+	return (dimension && wMargin) ? wMargin / dimension : 1
+}
+
 @Component
 export default class VPdfViewport extends Vue {
 
@@ -17,6 +22,9 @@ export default class VPdfViewport extends Vue {
 	@Prop({ type: Boolean, default: false })
 	readonly fitHeight!: boolean
 
+	@Prop({ type: Number, default: 0 })
+	readonly margin!: number
+
 	page: PDFPageProxy | null = null
 	isLoading: boolean = false
 
@@ -26,13 +34,13 @@ export default class VPdfViewport extends Vue {
 	}
 
 	get calculatedScale() {
-		const { scale, defaultViewport, fitWidth, fitHeight, $el } = this
+		const { scale, defaultViewport, fitWidth, fitHeight, margin, $el } = this
 		if (scale != null) return scale
 
-		const { width: pdfWidth, height: pdfHeight } = defaultViewport ?? {}
-		const { width, height } = $el?.parentElement?.getBoundingClientRect() ?? {}
-		const widthScale = (fitWidth && pdfWidth && width) ? width / pdfWidth : 1
-		const heightScale = (fitHeight && pdfHeight && height) ? height / pdfHeight : 1
+		const { width = 0, height = 0 } = defaultViewport ?? {}
+		const { clientWidth = 0, clientHeight = 0 } = $el?.parentElement ?? {}
+		const widthScale = fitWidth ? calcScale(width, clientWidth, margin) : 1
+		const heightScale = fitHeight ? calcScale(height, clientHeight, margin) : 1
 		return Math.min(widthScale, heightScale, 1)
 	}
 
