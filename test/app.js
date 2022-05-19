@@ -3,7 +3,8 @@ var app = new Vue({
 	el: '#app',
 	data: {
 		title: "VPdf Test",
-		pdf: "2021-Campus-Map.pdf",
+		// pdf: "2021-Campus-Map.pdf",
+		pdf: "file-sample.pdf",
 		currentPage: 1,
 		lastPage: 1
 	},
