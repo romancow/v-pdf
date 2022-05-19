@@ -4,6 +4,7 @@ import VPdfBase from './v-pdf-base'
 import { PageFlip, FlipCorner, SizeType } from 'page-flip'
 import type { PageViewport } from 'pdfjs-dist'
 import PageFlipSetting from './page-flip-setting'
+import PageFlipStyle from './page-flip-style'
 import VPdfViewport from './v-pdf-viewport'
 
 type FlipAnimate = boolean | FlipCorner
@@ -13,29 +14,38 @@ namespace FlipAnimate {
 	}
 }
 
+const PageStyle = PageFlipStyle<VPdfFlip>()
+const RenderedPageStyle = PageFlipStyle<VPdfFlip>()
+
 @Component({
 	components: { VPdfViewport }
 })
 export default class VPdfFlip extends VPdfBase {
 
+	@PageStyle
 	@PageFlipSetting.Number
 	readonly width!: number | null
 
+	@PageStyle
 	@PageFlipSetting.Number
 	readonly height!: number
 
 	@PageFlipSetting.Boolean('size', stretch => stretch ? <SizeType>"stretch" : undefined)
 	readonly stretch!: boolean
 
+	@PageStyle
 	@PageFlipSetting.Number
 	readonly minWidth!: number | null
 
+	@PageStyle
 	@PageFlipSetting.Number
 	readonly maxWidth!: number | null
 
+	@PageStyle
 	@PageFlipSetting.Number
 	readonly minHeight!: number | null
 
+	@PageStyle
 	@PageFlipSetting.Number
 	readonly maxHeight!: number | null
 
@@ -72,7 +82,9 @@ export default class VPdfFlip extends VPdfBase {
 	@PageFlipSetting.Inverse('mobileScrollSupport')
 	readonly noMobileScrollSupport!: boolean | null
 
+	@RenderedPageStyle('width')
 	renderedWidth: number | null = null
+	@RenderedPageStyle('height')
 	renderedHeight: number | null = null
 	pageFlip!: PageFlip | null
 
@@ -109,19 +121,10 @@ export default class VPdfFlip extends VPdfBase {
 	}
 
 	get pageStyle() {
-		const { renderedWidth, renderedHeight } = this
-		const initial: { [r: string]: string | null } = { 
-			width: `${renderedWidth}px`,
-			height: `${renderedHeight}px`
+		return {
+			...RenderedPageStyle.get(this), 
+			...PageStyle.get(this)
 		}
-		// TODO: use decorators instead of prop names?
-		const props: (keyof VPdfFlip)[]  = ["width", "minWidth", "maxWidth", "height", "minHeight", "maxHeight"]
-		return props.reduce((style, prop) => {
-			const value = this[prop]
-			if (value != null)
-				style[prop] = `${value}px`
-			return style
-		}, initial)
 	}
 
 	flipNext(animate: FlipAnimate = true) {
@@ -205,15 +208,10 @@ export default class VPdfFlip extends VPdfBase {
 			v-pdf-render(
 				fit-width, fit-height,
 				:value='page',
-				:scale='scale'
+				:scale='scale',
+				:loadingWidth='pageWidth',
+				:loadingHeight='pageHeight'
 			)
-		//- v-pdf-render.v-pdf-flip-page(
-		//- 	v-for='(page, num) in pages',
-		//- 	:key='getPageKey(num)',
-		//- 	:value='page',
-		//- 	:scale='scale',
-		//- 	fit-width
-		//- )
 
 </template>
 
