@@ -66,14 +66,17 @@ export default class VPdfRender extends VPdfViewport {
 
 <template lang="pug">
 
-	.v-pdf-render(:class='{ loading: isLoading }', :style='style')
+	.v-pdf-render(
+		:class='{ loading: isLoading }',
+		:style='style',
+		:data-page='pageNumber',
+		:data-scale='calculatedScale',
+	)
 		slot(name='loading', v-if='isLoading')
 			span Loading page...
 		canvas(
 			v-else-if='hasPage',
 			ref='canvas',
-			:data-page='pageNumber',
-			:data-scale='calculatedScale',
 			:width='canvasWidth',
 			:height='canvasHeight'
 		)

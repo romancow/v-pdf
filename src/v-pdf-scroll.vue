@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import VPdfBase from './v-pdf-base'
 
 @Component
@@ -11,11 +11,34 @@ export default class VPdfScroll extends VPdfBase {
 	@Prop({ type: Number, default: 5 })
 	readonly margin!: number
 
+	@Prop({ type: Boolean, default: true })
+	readonly smooth!: boolean
+
 	get pageStyle() {
 		const { margin } = this
 		return {
 			margin: margin ? `${margin}px` : null
 		}
+	}
+
+	getPageElement(page: number) {
+		return this.$el.querySelector<HTMLElement>(`.v-pdf-render[data-page="${page}"]`)
+	}
+
+	@Watch('page')
+	scrollToPage(page: number) {
+		const pageElem = this.getPageElement(page)
+		pageElem?.scrollIntoView({
+			block: "start",
+			inline: "nearest",
+			behavior: this.smooth ? "smooth" : "auto"
+		})
+	}
+
+	async pageRendered({ page }: { page: { pageNumber: number }}) {
+		const current = this.page
+		if ((page.pageNumber <= current) && (current !== 1))
+			this.scrollToPage(current)
 	}
 
 }
@@ -33,7 +56,8 @@ export default class VPdfScroll extends VPdfBase {
 			:fit-width='!horizontal',
 			:fit-height='horizontal',
 			:margin='margin',
-			:style='pageStyle'
+			:style='pageStyle',
+			@rendered='pageRendered'
 		)
 
 </template>
