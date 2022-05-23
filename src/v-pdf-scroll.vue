@@ -1,8 +1,12 @@
 <script lang="ts">
 import { Component, Prop, Watch } from 'vue-property-decorator'
 import VPdfBase from './v-pdf-base'
+import Intersect from './v-intersect'
 
-@Component
+
+@Component({
+	directives: { Intersect }
+})
 export default class VPdfScroll extends VPdfBase {
 
 	@Prop({ type: Boolean, default: false})
@@ -13,6 +17,11 @@ export default class VPdfScroll extends VPdfBase {
 
 	@Prop({ type: Boolean, default: true })
 	readonly smooth!: boolean
+
+	@Prop({ type: Number, default: 0.67 })
+	readonly threshold!: number
+
+	intersectionObserver!: IntersectionObserver
 
 	get pageStyle() {
 		const { margin } = this
@@ -35,10 +44,33 @@ export default class VPdfScroll extends VPdfBase {
 		})
 	}
 
+	@Watch('threshold')
+	setIntersectionObserver(threshold: number = this.threshold) {
+		this.intersectionObserver?.disconnect()
+		this.intersectionObserver = new IntersectionObserver(
+			this.pageIntersected,
+			{ root: this.$el, threshold }
+		)
+	}
+
 	async pageRendered({ page }: { page: { pageNumber: number }}) {
 		const current = this.page
 		if ((page.pageNumber <= current) && (current !== 1))
 			this.scrollToPage(current)
+	}
+
+	pageIntersected(entries: IntersectionObserverEntry[]) {
+		const { page } = this
+		const pages = entries
+			.filter(entry => entry.isIntersecting)
+			.map(entry => +((<HTMLElement>entry.target).dataset.page ?? ""))
+			.filter(entry => !!entry)
+		if (!pages.includes(page) && pages.length)
+			this.$emit('update:page', pages[0])
+	}
+
+	mounted() {
+		this.setIntersectionObserver()
 	}
 
 }
@@ -50,6 +82,7 @@ export default class VPdfScroll extends VPdfBase {
 	div.v-pdf-scroll(:class='{ horizontal }')
 		v-pdf-render(
 			v-for='(page, num) in pages',
+			v-intersect='intersectionObserver',
 			:key='getPageKey(num)',
 			:value='page',
 			:scale='scale',
