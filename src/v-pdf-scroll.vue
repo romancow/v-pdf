@@ -21,13 +21,16 @@ export default class VPdfScroll extends VPdfBase {
 	@Prop({ type: Number, default: 0.67 })
 	readonly threshold!: number
 
-	intersectionObserver!: IntersectionObserver
-
 	get pageStyle() {
 		const { margin } = this
 		return {
 			margin: margin ? `${margin}px` : null
 		}
+	}
+
+	get intersectionObserver() {
+		const { $el: root, threshold, pageIntersected } = this
+		return new IntersectionObserver(pageIntersected, { root, threshold })
 	}
 
 	getPageElement(page: number) {
@@ -42,15 +45,6 @@ export default class VPdfScroll extends VPdfBase {
 			inline: "nearest",
 			behavior: this.smooth ? "smooth" : "auto"
 		})
-	}
-
-	@Watch('threshold')
-	setIntersectionObserver(threshold: number = this.threshold) {
-		this.intersectionObserver?.disconnect()
-		this.intersectionObserver = new IntersectionObserver(
-			this.pageIntersected,
-			{ root: this.$el, threshold }
-		)
 	}
 
 	async pageRendered({ page }: { page: { pageNumber: number }}) {
@@ -68,11 +62,6 @@ export default class VPdfScroll extends VPdfBase {
 		if (!pages.includes(pageNumber) && pages.length)
 			this.pageNumber = pages[0]
 	}
-
-	mounted() {
-		this.setIntersectionObserver()
-	}
-
 }
 </script>
 
