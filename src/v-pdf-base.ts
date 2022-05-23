@@ -1,4 +1,4 @@
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop, PropSync, Watch } from 'vue-property-decorator'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import * as PdfJs from 'pdfjs-dist'
 import VPdfRender from './v-pdf-render.vue'
@@ -11,11 +11,11 @@ export default class VPdfBase extends Vue {
 	@Prop({ type: String, default: null })
 	readonly src!: string | null
 
-	@Prop({ type: Number, default: 1 })
-	readonly page!: number
-
 	@Prop({ type: Number, default: null })
 	readonly scale!: number | null
+
+	@PropSync('page', { type: Number, default: 1 })
+	pageNumber!: number
 
 	document: PDFDocumentProxy | null = null
 

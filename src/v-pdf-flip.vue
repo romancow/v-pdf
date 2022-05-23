@@ -106,12 +106,12 @@ export default class VPdfFlip extends VPdfBase {
 	}
 
 	set pageIndex(index: number) {
-		this.$emit('update:page', index + 1)
+		this.pageNumber = index + 1
 	}
 
 	get currentPage() {
-		const { pages, page } = this
-		return pages[page - 1]
+		const { pages, pageNumber } = this
+		return pages[pageNumber - 1]
 	}
 
 	get settings() {
@@ -143,7 +143,7 @@ export default class VPdfFlip extends VPdfBase {
 			pageFlip?.turnToPrevPage()
 	}
 
-	@Watch('page')
+	@Watch('pageNumber')
 	flip(page: number, animate: FlipAnimate = true) {
 		const { pageFlip } = this
 		const pageIndex = page - 1

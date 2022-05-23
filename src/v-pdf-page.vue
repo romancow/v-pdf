@@ -19,11 +19,11 @@ export default class VPdfPage extends VPdfBase {
 	}
 
 	@Watch('document')
-	@Watch('page')
+	@Watch('pageNumber')
 	async setDocumentPage() {
-		const { document, page } = this
+		const { document, pageNumber } = this
 		this.documentPage = !document ? null :
-			await this.loadEmit('page', document.getPage(page))
+			await this.loadEmit('page', document.getPage(pageNumber))
 	}
 }
 </script>

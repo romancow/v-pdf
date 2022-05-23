@@ -34,7 +34,7 @@ export default class VPdfScroll extends VPdfBase {
 		return this.$el.querySelector<HTMLElement>(`.v-pdf-render[data-page="${page}"]`)
 	}
 
-	@Watch('page')
+	@Watch('pageNumber')
 	scrollToPage(page: number) {
 		const pageElem = this.getPageElement(page)
 		pageElem?.scrollIntoView({
@@ -54,19 +54,19 @@ export default class VPdfScroll extends VPdfBase {
 	}
 
 	async pageRendered({ page }: { page: { pageNumber: number }}) {
-		const current = this.page
+		const current = this.pageNumber
 		if ((page.pageNumber <= current) && (current !== 1))
 			this.scrollToPage(current)
 	}
 
 	pageIntersected(entries: IntersectionObserverEntry[]) {
-		const { page } = this
+		const { pageNumber } = this
 		const pages = entries
 			.filter(entry => entry.isIntersecting)
 			.map(entry => +((<HTMLElement>entry.target).dataset.page ?? ""))
 			.filter(entry => !!entry)
-		if (!pages.includes(page) && pages.length)
-			this.$emit('update:page', pages[0])
+		if (!pages.includes(pageNumber) && pages.length)
+			this.pageNumber = pages[0]
 	}
 
 	mounted() {
